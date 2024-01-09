@@ -3,12 +3,84 @@ declare(strict_types=1);
 
 namespace carry0987\SessionManager;
 
+use carry0987\SessionManager\Exceptions\SessionException;
+
 class SessionManager
 {
     const INITIATED = 'INITIATED';
     const LAST_ACTIVITY = 'LAST_ACTIVITY';
 
-    public function __construct(string $sessionName = null, array $cookieParams = [])
+    public function __construct(string $sessionName = null, array $cookieParams = []): void
+    {
+        $this->initSession($sessionName, $cookieParams);
+        $this->preventSessionFixation();
+        $this->preventSessionExpired();
+        $this->generateCSRFToken();
+    }
+
+    public function set(string $key, $value): void
+    {
+        $_SESSION[$key] = $value;
+    }
+
+    public function get(string $key): ?string
+    {
+        return $_SESSION[$key] ?? null;
+    }
+
+    public function exists(string $key): bool
+    {
+        return isset($_SESSION[$key]);
+    }
+
+    public function remove(string $key): void
+    {
+        unset($_SESSION[$key]);
+    }
+
+    public function destroy(): void
+    {
+        session_unset();
+        session_destroy();
+
+        // Delete session cookie
+        $params = session_get_cookie_params();
+        $deleted = setcookie(
+            session_name(),
+            '',
+            time() - 3600,
+            $params['path'],
+            $params['domain'],
+            $params['secure'],
+            $params['httponly']
+        );
+
+        if (!$deleted) {
+            throw new SessionException('Unable to delete the session cookie.');
+        }
+    }
+
+    public function renew(string $sessionName = null, array $cookieParams = []): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $this->destroy();
+        }
+
+        $this->initSession($sessionName, $cookieParams);
+        $this->preventSessionFixation();
+    }
+
+    public function getCSRFToken(): string
+    {
+        return $this->get('csrf_token');
+    }
+
+    public function verifyCSRFToken(string $token): bool
+    {
+        return $this->exists('csrf_token') && hash_equals($this->get('csrf_token'), $token);
+    }
+
+    private function initSession(string $sessionName = null, array $cookieParams = []): void
     {
         if ($sessionName) {
             session_name($sessionName);
@@ -34,54 +106,6 @@ class SessionManager
         $this->generateCSRFToken();
     }
 
-    public function set(string $key, $value): void
-    {
-        $_SESSION[$key] = $value;
-    }
-
-    public function get(string $key)
-    {
-        return $_SESSION[$key] ?? null;
-    }
-
-    public function exists(string $key): bool
-    {
-        return isset($_SESSION[$key]);
-    }
-
-    public function remove(string $key): void
-    {
-        unset($_SESSION[$key]);
-    }
-
-    public function destroy(): void
-    {
-        session_unset();
-        session_destroy();
-
-        // Delete session cookie
-        $params = session_get_cookie_params();
-        setcookie(
-            session_name(),
-            '',
-            time() - 3600,
-            $params['path'],
-            $params['domain'],
-            $params['secure'],
-            $params['httponly']
-        );
-    }
-
-    public function getCSRFToken(): string
-    {
-        return $this->get('csrf_token');
-    }
-
-    public function verifyCSRFToken(string $token): bool
-    {
-        return $this->exists('csrf_token') && hash_equals($this->get('csrf_token'), $token);
-    }
-
     private function preventSessionFixation(): void
     {
         if (!$this->exists(self::INITIATED)) {
@@ -102,7 +126,12 @@ class SessionManager
     private function generateCSRFToken(): void
     {
         if (!$this->exists('csrf_token')) {
-            $this->set('csrf_token', bin2hex(random_bytes(32)));
+            try {
+                $token = bin2hex(random_bytes(32));
+            } catch (\Exception $e) {
+                throw new SessionException('Unable to generate a CSRF token.', 0, $e);
+            }
+            $this->set('csrf_token', $token);
         }
     }
 }
