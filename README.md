@@ -1,6 +1,5 @@
 # SessionManager
-[![Packgist](https://img.shields.io/packagist/v/carry0987/session-manager.svg?style=flat-square)](https://packagist.org/packages/carry0987/session-manager)
-[![Build Status](https://travis-ci.com/carry0987/SessionManager.svg?branch=master)](https://travis-ci.com/carry0987/SessionManager)  
+[![Packgist](https://img.shields.io/packagist/v/carry0987/session-manager.svg?style=flat-square)](https://packagist.org/packages/carry0987/session-manager)  
 Modern PHP Session Management Library
 
 ## Introduction
