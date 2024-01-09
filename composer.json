@@ -1,0 +1,29 @@
+{
+    "name": "carry0987/session-manager",
+    "description": "Flexible and secure session management for PHP. This library provides an object-oriented wrapper for PHP's native session handling functions, implementing SessionHandlerInterface for easy integration with existing projects. It also comes with additional features like session encryption and database storage handlers for scalable applications.",
+    "type": "library",
+    "require": {
+        "php": ">=7.4"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "carry0987\\SessionManager\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "carry0987\\SessionManager\\Example\\": "example/class/"
+        }
+    },
+    "authors": [
+        {
+            "name": "carry0987"
+        }
+    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    }
+}
