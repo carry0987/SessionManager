@@ -10,7 +10,7 @@ class SessionManager
     const INITIATED = 'INITIATED';
     const LAST_ACTIVITY = 'LAST_ACTIVITY';
 
-    public function __construct(string $sessionName = null, array $cookieParams = []): void
+    public function __construct(string $sessionName = null, array $cookieParams = [])
     {
         $this->initSession($sessionName, $cookieParams);
         $this->preventSessionFixation();
@@ -23,7 +23,7 @@ class SessionManager
         $_SESSION[$key] = $value;
     }
 
-    public function get(string $key): ?string
+    public function get(string $key)
     {
         return $_SESSION[$key] ?? null;
     }
