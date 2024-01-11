@@ -13,9 +13,6 @@ class SessionManager
     public function __construct(string $sessionName = null, array $cookieParams = [])
     {
         $this->initSession($sessionName, $cookieParams);
-        $this->preventSessionFixation();
-        $this->preventSessionExpired();
-        $this->generateCSRFToken();
     }
 
     public function set(string $key, $value): void
@@ -40,13 +37,12 @@ class SessionManager
 
     public function destroy(): void
     {
-        session_unset();
-        session_destroy();
+        $this->unsetSession()->destroySession();
 
         // Delete session cookie
-        $params = session_get_cookie_params();
+        $params = $this->getSessionCookieParams();
         $deleted = setcookie(
-            session_name(),
+            $this->getSessionName(),
             '',
             time() - 3600,
             $params['path'],
@@ -83,34 +79,36 @@ class SessionManager
     private function initSession(string $sessionName = null, array $cookieParams = []): void
     {
         if ($sessionName) {
-            session_name($sessionName);
+            $this->setSessionName($sessionName);
         }
 
         $cookieDefaults = [
             'lifetime' => 0,
             'path' => '/',
             'domain' => '',
-            'secure' => isset($_SERVER['HTTPS']),
+            'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
             'httponly' => true,
             'samesite' => 'Lax'
         ];
         $cookieParams = array_merge($cookieDefaults, $cookieParams);
-        session_set_cookie_params($cookieParams);
+        $this->setSessionCookieParams($cookieParams);
 
         if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+            $this->startSession();
+            $this->preventSessionFixation();
+            $this->preventSessionExpired();
+            $this->generateCSRFToken();
         }
-
-        $this->preventSessionFixation();
-        $this->preventSessionExpired();
-        $this->generateCSRFToken();
     }
 
     private function preventSessionFixation(): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            return;
+        }
+
         if (!$this->exists(self::INITIATED)) {
-            session_regenerate_id(true);
-            $this->set(self::INITIATED, true);
+            $this->regenerateSession(true)->set(self::INITIATED, true);
         }
     }
 
@@ -133,5 +131,57 @@ class SessionManager
             }
             $this->set('csrf_token', $token);
         }
+    }
+
+    private function unsetSession(): self
+    {
+        session_unset();
+
+        return $this;
+    }
+
+    private function destroySession(): self
+    {
+        session_destroy();
+
+        return $this;
+    }
+
+    private function regenerateSession(bool $delete_old_session = false): self
+    {
+        session_regenerate_id($delete_old_session);
+
+        return $this;
+    }
+
+    private function setSessionName(string $sessionName): self
+    {
+        session_name($sessionName);
+
+        return $this;
+    }
+
+    private function setSessionCookieParams(array $cookieParams): self
+    {
+        session_set_cookie_params($cookieParams);
+
+        return $this;
+    }
+
+    private function startSession(): self
+    {
+        session_start();
+
+        return $this;
+    }
+
+    private function getSessionName(): string
+    {
+        return session_name();
+    }
+
+    private function getSessionCookieParams(): array
+    {
+        return session_get_cookie_params();
     }
 }
