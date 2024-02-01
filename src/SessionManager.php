@@ -76,6 +76,12 @@ class SessionManager
         return $this->exists('csrf_token') && hash_equals($this->get('csrf_token'), $token);
     }
 
+    public function refreshCSRFToken(): void
+    {
+        $this->remove('csrf_token');
+        $this->generateCSRFToken();
+    }
+
     private function initSession(string $sessionName = null, array $cookieParams = []): void
     {
         if ($sessionName) {
