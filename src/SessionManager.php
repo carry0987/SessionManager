@@ -129,6 +129,8 @@ class SessionManager
             } catch (\Exception $e) {
                 throw new SessionException('Unable to generate a CSRF token.', 0, $e);
             }
+
+            // Set CSRF token
             $this->set('csrf_token', $token);
         }
     }
