@@ -73,7 +73,11 @@ class SessionManager
 
     public function verifyCSRFToken(?string $token): bool
     {
-        return $this->exists('csrf_token') && hash_equals($this->get('csrf_token'), (string) $token);
+        if (empty($token)) {
+            return false;
+        }
+
+        return $this->exists('csrf_token') && hash_equals($this->get('csrf_token'), $token);
     }
 
     public function refreshCSRFToken(): void
