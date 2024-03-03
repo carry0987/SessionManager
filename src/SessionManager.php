@@ -64,7 +64,6 @@ class SessionManager
         }
 
         $this->initSession($sessionName, $cookieParams);
-        $this->preventSessionFixation();
     }
 
     public function getCSRFToken(): string
