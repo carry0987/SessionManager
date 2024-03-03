@@ -59,7 +59,7 @@ class SessionManager
 
     public function renew(string $sessionName = null, array $cookieParams = []): void
     {
-        if (session_status() === PHP_SESSION_ACTIVE) {
+        if (session_status() === PHP_SESSION_ACTIVE || $this->checkSessionStarted() === true) {
             $this->destroy();
         }
 
@@ -102,9 +102,9 @@ class SessionManager
         ];
         $cookieParams = array_merge($cookieDefaults, $cookieParams);
         $this->setSessionCookieParams($cookieParams);
+        $this->startSession();
 
-        if (session_status() === PHP_SESSION_NONE) {
-            $this->startSession();
+        if ($this->checkSessionStarted() === false) {
             $this->preventSessionFixation();
             $this->preventSessionExpired();
             $this->generateCSRFToken();
@@ -113,7 +113,7 @@ class SessionManager
 
     private function preventSessionFixation(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
+        if (session_status() === PHP_SESSION_NONE || $this->checkSessionStarted() === false) {
             return;
         }
 
@@ -180,9 +180,9 @@ class SessionManager
         return $this;
     }
 
-    private function startSession(): self
+    private function startSession(array $sessionOptions = []): self
     {
-        session_start();
+        session_start($sessionOptions);
 
         return $this;
     }
@@ -190,6 +190,11 @@ class SessionManager
     private function getSessionName(): string
     {
         return session_name();
+    }
+
+    private function checkSessionStarted(): bool
+    {
+        return !empty(session_id());
     }
 
     private function getSessionCookieParams(): array
