@@ -9,6 +9,7 @@ class SessionManager
 {
     const INITIATED = 'INITIATED';
     const LAST_ACTIVITY = 'LAST_ACTIVITY';
+    const EXPIRE_AFTER = 1800;
 
     public function __construct(string $sessionName = null, array $cookieParams = [])
     {
@@ -124,7 +125,7 @@ class SessionManager
 
     private function preventSessionExpired(): void
     {
-        if ($this->exists(self::LAST_ACTIVITY) && (time() - $this->get(self::LAST_ACTIVITY) > 1800)) {
+        if ($this->exists(self::LAST_ACTIVITY) && (time() - $this->get(self::LAST_ACTIVITY) > self::EXPIRE_AFTER)) {
             $this->destroy();
         } else {
             $this->set(self::LAST_ACTIVITY, time());
