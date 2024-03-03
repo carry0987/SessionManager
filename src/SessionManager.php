@@ -86,9 +86,9 @@ class SessionManager
         $this->generateCSRFToken();
     }
 
-    private function initSession(string $sessionName = null, array $cookieParams = []): void
+    private function initSession(string $sessionName, array $cookieParams): void
     {
-        if ($sessionName) {
+        if (!empty($sessionName)) {
             $this->setSessionName($sessionName);
         }
 
