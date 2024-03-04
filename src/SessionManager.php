@@ -66,7 +66,7 @@ class SessionManager
         $this->initSession($sessionName, $cookieParams);
     }
 
-    public function getCSRFToken(): string
+    public function getCSRFToken(): ?string
     {
         return $this->get('csrf_token');
     }
