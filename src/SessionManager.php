@@ -103,11 +103,12 @@ class SessionManager
         $cookieParams = array_merge($cookieDefaults, $cookieParams);
         $this->setSessionCookieParams($cookieParams);
         $this->startSession();
+        // Generate CSRF token
+        $this->generateCSRFToken();
 
         if ($this->checkSessionStarted() === false) {
             $this->preventSessionFixation();
             $this->preventSessionExpired();
-            $this->generateCSRFToken();
         }
     }
 
