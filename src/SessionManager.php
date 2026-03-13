@@ -11,7 +11,7 @@ class SessionManager
     const LAST_ACTIVITY = 'LAST_ACTIVITY';
     const EXPIRE_AFTER = 1800;
 
-    public function __construct(string $sessionName = null, array $cookieParams = [])
+    public function __construct(?string $sessionName = null, array $cookieParams = [])
     {
         $this->initSession($sessionName, $cookieParams);
     }
@@ -57,7 +57,7 @@ class SessionManager
         }
     }
 
-    public function renew(string $sessionName = null, array $cookieParams = []): void
+    public function renew(?string $sessionName = null, array $cookieParams = []): void
     {
         if (session_status() === PHP_SESSION_ACTIVE || $this->checkSessionStarted() === true) {
             $this->destroy();
